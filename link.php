@@ -176,15 +176,14 @@ class LinkBase
     protected function __print_html_links($result, $field, $desc)
     {
         $self = $_SERVER['PHP_SELF'];
-        $num = mysql_numrows ($result);
 
-        for ($i = 0; $i < $num; $i++) {
-            $str = $this->id_to_urlstr (mysql_result ($result, $i, "id"));
-            $count = mysql_result ($result, $i, $field);
-            $url = mysql_result ($result, $i, "url");
-            $nick = mysql_result ($result, $i, "nick");
-            $title = mysql_result ($result, $i, "title");
-            $alive = mysql_result ($result, $i, "alive");
+	while ($row = mysql_fetch_assoc($result)) {
+	    $str = $this->id_to_urlstr($row['id']);
+	    $count = $row[$field];
+	    $url = $row['url'];
+	    $nick = $row['nick'];
+	    $title = $row['title'];
+	    $alive = $row['alive'];
             if (!$this->expand)
                 $surl = $this->shorten_url($url);
 
@@ -482,8 +481,7 @@ class LinkRSSFeed extends LinkBase
 	$q .= "ORDER BY last_seen DESC ";
 	$q .= "LIMIT 0,$this->count";
 
-	$result = mysql_query ($q);
-	$num = mysql_numrows ($result);
+	$result = mysql_query($q);
 	$this->print_rss_links($result);
 
         echo '</channel>';
@@ -492,19 +490,18 @@ class LinkRSSFeed extends LinkBase
 
     function print_rss_links($result)
     {
-        $num = mysql_numrows ($result);
-        for ($i = 0; $i < $num; $i++) {
-            $id = mysql_result ($result, $i, "id");
-            $nick = mysql_result ($result, $i, "nick");
-            $url = mysql_result ($result, $i, "url");
-            $seen = mysql_result ($result, $i, "last_seen");
-            $title = mysql_result ($result, $i, "title");
+	while ($row = mysql_fetch_assoc($result)) {
+            $id    = $row["id"];
+            $nick  = $row["nick"];
+            $url   = $row["url"];
+            $seen  = $row["last_seen"];
+            $title = $row["title"];
             if ($title == "")
                 $title = $this->shorten_url($url);
+            $type  = $row["type"];
+            $desc  = $row["description"];
 
             $title = htmlentities($title);
-            $type = mysql_result($result, $i, "type");
-            $desc = mysql_result($result, $i, "description");
             $slink = "http://ice-nine.org/l/" . $this->id_to_urlstr($id);
 
 	    if ($title == $url and (isset($desc) or $desc == "")) {
@@ -586,16 +583,9 @@ class LinkRedirector extends LinkBase
               "last_seen,title,alive FROM url WHERE id = " .
               "$this->id GROUP BY url";
         $result = mysql_query ($query);
-        $num = mysql_numrows ($result);
 
-        $values['url'] = @mysql_result($result, 0, 'url');
-        $values['nick'] = @mysql_result($result, 0, "nick");
-        $values['posted'] = @mysql_result($result, 0, "posted") - 1;
-        $values['viewed'] = @mysql_result($result, 0, "viewed");
-        $values['last_seen'] = @mysql_result($result, 0, "last_seen");
-        $values['first_seen'] = @mysql_result($result, 0, "first_seen");
-        $values['title'] = @mysql_result($result, 0, "title");
-        $values['alive'] = @mysql_result($result, 0, "alive");
+	$values = mysql_fetch_assoc($result);
+	$values['posted'] -= 1;
         return $values;
     }
 

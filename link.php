@@ -310,15 +310,10 @@ class LinkSearcher extends LinkBase
             $npages = ceil($rows / $results);
 
             if ($curpage < $npages) {
-                if (isset($globals['dupesok'])) {
-                    $seen = "last_seen";
-                } else {
-                    $seen = "first_seen";
-                }
                 $query  = "SELECT SUM(count) ";
-                $query .= "AS sum, id, url, nick, $seen, title, ";
+                $query .= "AS sum, id, url, nick, last_seen, title, ";
                 $query .= "alive FROM url WHERE $q GROUP BY url ";
-                $query .= "ORDER BY $seen DESC";
+                $query .= "ORDER BY last_seen DESC";
 
                 if ($results > 0) $query .= " LIMIT $start, $results";
 
@@ -443,7 +438,6 @@ class LinkSearcher extends LinkBase
 
 class LinkRSSFeed extends LinkBase
 {
-    public $dupesok = 0;
     public $count = 40;
     function __construct(array $array) {
         parent::__construct($array);
@@ -451,8 +445,6 @@ class LinkRSSFeed extends LinkBase
         if (isset($array['count']))
             $this->count = $array['count'];
 
-        if (isset($array['dupesok']))
-            $this->dupesok = 1;
     }
 
     public function output() {
@@ -473,47 +465,39 @@ class LinkRSSFeed extends LinkBase
         $count = 40;
         $frequency = 24 / 4;
         $now = time();
-        $seen = $this->dupesok ? 'last_seen' : 'first_seen';
 
-	$q  = "SELECT id, url, nick, $seen, title, type, ";
-	$q .= "description FROM url ORDER BY $seen DESC ";
+	$q  = "SELECT id, url, nick, last_seen, title, type, ";
+	$q .= "description FROM url ORDER BY last_seen DESC ";
 	$q .= "LIMIT 0,$this->count";
-#        $query  = "SELECT id, url, nick, last_seen, title, alive FROM url ";
-#        $query .= "ORDER BY last_seen DESC ";
-#        $query .= "LIMIT 0,$this->limit;";
-#        $result = mysql_query ($query);
-
-#            echo $q;
 
 	$result = mysql_query ($q);
-	$last = mysql_result ($result, 0, $seen);
+	$last = mysql_result ($result, 0, 'last_seen');
 	$last = strtotime($last);
 
 	$date = date( "r", $last);
 	echo "<lastBuildDate>$date</lastBuildDate>\n";
 
 
-	$q  = "SELECT id, url, nick, $seen, title, type, description FROM url ";
-	$q .= "ORDER BY $seen DESC ";
+	$q  = "SELECT id, url, nick, last_seen, title, type, description FROM url ";
+	$q .= "ORDER BY last_seen DESC ";
 	$q .= "LIMIT 0,$this->count";
 
 	$result = mysql_query ($q);
 	$num = mysql_numrows ($result);
-	$this->print_rss_links($result, $this->mode);
+	$this->print_rss_links($result);
 
         echo '</channel>';
         echo '</rss>';
     }
 
-    function print_rss_links($result, $mode)
+    function print_rss_links($result)
     {
         $num = mysql_numrows ($result);
         for ($i = 0; $i < $num; $i++) {
             $id = mysql_result ($result, $i, "id");
             $nick = mysql_result ($result, $i, "nick");
             $url = mysql_result ($result, $i, "url");
-            $seen = $this->dupesok ? 'last_seen' : 'first_seen';
-            $first_seen = mysql_result ($result, $i, "$seen");
+            $seen = mysql_result ($result, $i, "last_seen");
             $title = mysql_result ($result, $i, "title");
             if ($title == "")
                 $title = $this->shorten_url($url);
@@ -574,7 +558,7 @@ class LinkRSSFeed extends LinkBase
 	    if ($this->authenticated())
 		echo "    <author>$nick</author>\n";
 	    echo "    <pubDate>" .
-		 date("r", strtotime($first_seen)) .
+		 date("r", strtotime($seen)) .
 		 "</pubDate>\n";
 	    echo "  </item>\n";
         }
@@ -585,7 +569,6 @@ class LinkRedirector extends LinkBase
 {
     public $id;
     public $info = 0;
-    public $dupesok = 0;
 
     function __construct(array $array, $id) {
         parent::__construct($array);
@@ -595,8 +578,6 @@ class LinkRedirector extends LinkBase
 
         if (isset($array['info']))
             $this->info = 1;
-        if (isset($array['dupesok']))
-            $this->dupesok = 1;
     }
 
     private function getlink() {

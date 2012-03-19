@@ -447,8 +447,8 @@ class LinkRSSFeed extends LinkBase
     }
 
     public function output() {
-        header ('Content-Type: text/xml');
-        echo "<?xml version='1.0' encoding='iso-8859-1' ?>\n";
+        header ('Content-Type: text/xml; charset=utf-8');
+        echo "<?xml version='1.0' encoding='utf-8' ?>\n";
 ?>
 <rss version='2.0' xmlns:atom="http://www.w3.org/2005/Atom">
  <channel>
@@ -457,7 +457,7 @@ class LinkRSSFeed extends LinkBase
   <link>http://ice-nine.org/l</link>
   <atom:link href="<?php echo htmlentities("http://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);?>" rel="self" type="application/rss+xml" />
   <language>en-us</language>
-  <copyright>Copyright (C) 2004-2009, Jeffrey Mahoney</copyright>
+  <copyright>Copyright (C) 2004-2012, Jeffrey Mahoney</copyright>
   <webMaster>jeffm@jeffreymahoney.com (Jeff Mahoney)</webMaster>
 
 <?php
@@ -501,7 +501,6 @@ class LinkRSSFeed extends LinkBase
             $type  = $row["type"];
             $desc  = $row["description"];
 
-            $title = htmlentities($title);
             $slink = "http://ice-nine.org/l/" . $this->id_to_urlstr($id);
 
 	    if ($title == $url and (isset($desc) or $desc == "")) {
@@ -509,13 +508,17 @@ class LinkRSSFeed extends LinkBase
 		unset($desc);
 	    }
 	    $link = "<a href=\"$slink\" title=\"$url\">";
-	    $title = htmlentities($title, ENT_QUOTES);
 	    echo "  <item>\n";
+	    echo "    <title>";
 	    if (isset($title) and $title != "") {
-		    echo "    <title>$title</title>\n";
+		    $title = htmlentities($title, ENT_QUOTES, "UTF-8");
+		    $title = str_replace("&bull;", "&#149;", $title);
+		    $title = str_replace("&raquo;", "&#187;", $title);
+		    echo $title;
 	    } else {
-		    echo "    <title>" . htmlentities($url) . "</title>\n";
+		    echo htmlentities($url);
 	    }
+	    echo "    </title>\n";
 	    echo "    <link>$slink</link>\n";
 	    echo "    <description>\n";
 	    if (isset($desc)) {

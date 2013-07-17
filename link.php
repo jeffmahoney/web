@@ -1,5 +1,10 @@
 <?php
 
+class InvalidIDException extends Exception {};
+class InvalidIDBaseException extends InvalidIDException {};
+class InvalidIDRangeException extends InvalidIDException {};
+class UnknownIDException extends Exception {};
+
 ini_set('display_errors', 1);
 ini_set('error_log', "/tmp/link.errors");
 ini_set('log_errors', 1);
@@ -68,12 +73,12 @@ class LinkBase
         $base = strpos ($map, $str[0]);
         $num = 0;
         if ($base <= 1)
-            throw new Exception("Invalid URLID base [$base] [$str]");
+            throw new InvalidIDBaseException($str);
 
         for ($i = 1; $i < strlen ($str); $i++) {
             $pos = strpos ($map, $str[$i]);
             if ($pos >= $base)
-                throw new Exception("URL ID Character out of range $pos >= $base");
+                throw new InvalidIDRangeException($str);
             $num *= $base;
             $num += $pos;
         }
@@ -621,6 +626,9 @@ class LinkRedirector extends LinkBase
               "$this->id GROUP BY url";
         $result = mysql_query ($query);
 
+	if (mysql_num_rows($result) == 0)
+		throw new UnknownIDException($this->id);
+
 	$values = mysql_fetch_assoc($result);
 	$values['posted'] -= 1;
         return $values;
@@ -629,7 +637,14 @@ class LinkRedirector extends LinkBase
     private function print_info() {
         echo '<p class="linkinfo">';
 
-        $values = $this->getlink();
+	try {
+		$values = $this->getlink();
+	} catch (UnknownIDException $e) {
+		echo "Unknown ID $e</p>";
+		return;
+	}
+
+
         $tsval = strtotime($values['first_seen']);
         $ts = date("r", $tsval);
         echo "Link: <a href=\"http://ice-nine.org/l/" .
@@ -709,10 +724,7 @@ class LinkRedirector extends LinkBase
     private function url() {
         $values = $this->getlink();
 
-        if (isset($values))
-            return $values['url'];
-
-        throw new Exception("Invalid URL requested");
+	return $values['url'];
     }
 
     public function header() {
@@ -720,7 +732,11 @@ class LinkRedirector extends LinkBase
             $this->update_count();
 
             if ($this->check_cookies()) {
-                header("Location: " . $this->url());
+		try {
+			header("Location: " . $this->url());
+		} catch (UnknownIDException $e) {
+			parent::header();
+		}
                 return;
             }
             $this->header_start();
@@ -733,10 +749,10 @@ class LinkRedirector extends LinkBase
     }
 
     public function body() {
-        $results = $this->getlink();
         $this->body_start();
-
-        if (!isset($results['url'])) {
+	try {
+		$results = $this->getlink();
+	} catch (UnknownIDException $e) {
             echo '<p class="error">ERROR: Unknown URL ID ' .
                  'specified.</p>';
             $this->body_finish();

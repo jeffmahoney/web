@@ -549,6 +549,7 @@ class LinkRSSFeed extends LinkBase
 	    }
 	    echo "</title>\n";
 	    echo "    <link>$slink</link>\n";
+	    echo "    <guid isPermaLink=\"false\">$id</guid>\n";
 	    echo "    <description>\n";
 	    if (isset($desc)) {
 		echo "    " . $this->sanitize($desc) . " . . .\n";

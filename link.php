@@ -459,6 +459,7 @@ class LinkRSSFeed extends LinkBase
   <language>en-us</language>
   <copyright>Copyright (C) 2004-2012, Jeffrey Mahoney</copyright>
   <webMaster>jeffm@jeffreymahoney.com (Jeff Mahoney)</webMaster>
+  <ttl>2</ttl>
 
 <?php
         $count = 40;

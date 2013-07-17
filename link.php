@@ -478,7 +478,7 @@ class LinkRSSFeed extends LinkBase
 	echo "<lastBuildDate>$date</lastBuildDate>\n";
 
 
-	$q  = "SELECT id, url, nick, last_seen, title, type, description FROM url ";
+	$q  = "SELECT id, url, nick, last_seen, title, type, nsfw, description FROM url ";
 	$q .= "ORDER BY last_seen DESC ";
 	$q .= "LIMIT 0,$this->count";
 
@@ -512,6 +512,7 @@ class LinkRSSFeed extends LinkBase
                 $title = $this->shorten_url($url);
             $type  = $row["type"];
             $desc  = $row["description"];
+	    $nsfw  = $row["nsfw"];
 
             $slink = "http://ice-nine.org/l/" . $this->id_to_urlstr($id);
 
@@ -522,6 +523,24 @@ class LinkRSSFeed extends LinkBase
 	    $link = "<a href=\"$slink\" title=\"$url\">";
 	    echo "  <item>\n";
 	    echo "    <title>";
+	    if ($nsfw > 0) {
+		echo "(";
+	    }
+	    if ($nsfw & 2) {
+		echo "NSFW ";
+	    } else if ($nsfw & 1) {
+		echo "~NSFW ";
+	    }
+	    if ($nsfw & 4) {
+		if ($nsfw != 4) {
+		    echo ",";
+		}
+		echo "SPOILERS";
+	    }
+	    if ($nsfw > 0) {
+		echo ")";
+	    }
+
 	    if (isset($title) and $title != "") {
 		    $title = $this->sanitize($title);
 		    echo $title;

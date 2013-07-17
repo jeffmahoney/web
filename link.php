@@ -507,7 +507,7 @@ class LinkRSSFeed extends LinkBase
             $nick  = $row["nick"];
             $url   = $row["url"];
             $seen  = $row["last_seen"];
-            $title = $row["title"];
+            $title = trim($row["title"]);
             if ($title == "")
                 $title = $this->shorten_url($url);
             $type  = $row["type"];
@@ -517,7 +517,7 @@ class LinkRSSFeed extends LinkBase
             $slink = "http://ice-nine.org/l/" . $this->id_to_urlstr($id);
 
 	    if ($title == $url and (isset($desc) or $desc == "")) {
-		$title = $desc;
+		$title = trim($desc);
 		unset($desc);
 	    }
 	    $link = "<a href=\"$slink\" title=\"$url\">";
@@ -547,7 +547,7 @@ class LinkRSSFeed extends LinkBase
 	    } else {
 		    echo htmlentities($url);
 	    }
-	    echo "    </title>\n";
+	    echo "</title>\n";
 	    echo "    <link>$slink</link>\n";
 	    echo "    <description>\n";
 	    if (isset($desc)) {

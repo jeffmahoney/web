@@ -489,6 +489,17 @@ class LinkRSSFeed extends LinkBase
         echo '</rss>';
     }
 
+    function sanitize($string)
+    {
+	    $string = htmlentities($string);
+	    $string = str_replace("&bull;", "&#149;", $string);
+	    $string = str_replace("&laquo;", "&#171;", $string);
+	    $string = str_replace("&raquo;", "&#187;", $string);
+	    $string = str_replace("&mdash;", "--", $string);
+	    $string = str_replace("&nbsp;", " ", $string);
+	    return utf8_encode($string);
+    }
+
     function print_rss_links($result)
     {
 	while ($row = mysql_fetch_assoc($result)) {
@@ -512,9 +523,7 @@ class LinkRSSFeed extends LinkBase
 	    echo "  <item>\n";
 	    echo "    <title>";
 	    if (isset($title) and $title != "") {
-		    $title = htmlentities($title, ENT_QUOTES, "UTF-8");
-		    $title = str_replace("&bull;", "&#149;", $title);
-		    $title = str_replace("&raquo;", "&#187;", $title);
+		    $title = $this->sanitize($title);
 		    echo $title;
 	    } else {
 		    echo htmlentities($url);
@@ -523,7 +532,7 @@ class LinkRSSFeed extends LinkBase
 	    echo "    <link>$slink</link>\n";
 	    echo "    <description>\n";
 	    if (isset($desc)) {
-		echo "    " . htmlentities($desc) . " . . .\n";
+		echo "    " . $this->sanitize($desc) . " . . .\n";
 	    } else {
 		if ($type != "" && strncmp($type, "image/", 6) == 0) {
 		    echo htmlentities("$link<img src=\"$url\" ></a>\n");

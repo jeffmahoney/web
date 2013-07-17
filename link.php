@@ -693,7 +693,7 @@ class LinkRedirector extends LinkBase
 
         if (isset($_SERVER['HTTP_REFERER']) &&
             ($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ==
-            ereg_replace ("http://", "", $_SERVER['HTTP_REFERER']))) {
+            preg_replace ("#http://#", "", $_SERVER['HTTP_REFERER']))) {
             $ts = 0x7fffffff;
             if (isset($_COOKIE['forward']) &&
                 $_COOKIE['forward'] == "direct") {
@@ -982,9 +982,10 @@ if (isset($_GET['id'])) {
     $id = $_GET['id'];
 } else {
     $name = $_SERVER['SCRIPT_NAME'];
-    $uri = ereg_replace ("^http://[^/]*", "", $_SERVER['SCRIPT_URI']);
-    $args = ereg_replace ("^$name", "", $uri);
-    $id = ereg_replace ("^/", "", $args);
+    $uri = preg_replace ('#^http://[^/]*#', "", $_SERVER['SCRIPT_URI']);
+    $pattern = "#^${name}#";
+    $args = preg_replace ($pattern, "", $uri);
+    $id = preg_replace ('#^/#', "", $args);
 }
 
 $mysql_link = mysql_connect ($hostname, $username, $password) or die( "Couldn't connect to db: " . mysql_error());

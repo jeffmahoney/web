@@ -553,30 +553,34 @@ class LinkRSSFeed extends LinkBase
 	    if (isset($desc)) {
 		echo "    " . $this->sanitize($desc) . " . . .\n";
 	    } else {
-		if ($type != "" && strncmp($type, "image/", 6) == 0) {
-		    echo htmlentities("$link<img src=\"$url\" ></a>\n");
-		} else if (strncmp($type, "audio/", 6) == 0) {
-		    $audio  = "<audio controls=\"controls\" preload=\"metadata\">\n";
-		    $audio .= " <source src=\"$url\" type=\"$type\" />\n";
-		    $audio .= "</audio>\n";
-		    echo htmlentities($audio);
-		} else if ($type == "application/x-shockwave-flash") {
-		    $flash = "" .
-"<object classid=\"clsid:d27cdb6e-ae6d-11cf-96b8-444553540000\" width=\"550\" height=\"400\" id=\"movie_name\" align=\"middle\">\n" .
-"    <param name=\"movie\" value=\"$url\"/>\n" .
-"    <!--[if !IE]>-->\n" .
-"    <object type=\"application/x-shockwave-flash\" data=\"$url\" width=\"550\" height=\"400\">\n" .
-"        <param name=\"movie\" value=\"$url\"/>\n" .
-"	<param name=\"play\" value=\"false\" />\n" .
-"    <!--<![endif]-->\n" .
-"        <a href=\"http://www.adobe.com/go/getflash\">\n" .
-"            <img src=\"http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif\" alt=\"Get Adobe Flash player\"/>\n" .
-"        </a>\n" .
-"    <!--[if !IE]>-->\n" .
-"    </object>\n" .
-"    <!--<![endif]-->\n" .
-"</object>\n";
-		    echo htmlentities($flash);
+		if ($nsfw == 0) {
+			if ($type != "" && strncmp($type, "image/", 6) == 0) {
+			    echo htmlentities("$link<img src=\"$url\" ></a>\n");
+			} else if (strncmp($type, "audio/", 6) == 0) {
+			    $audio  = "<audio controls=\"controls\" preload=\"metadata\">\n";
+			    $audio .= " <source src=\"$url\" type=\"$type\" />\n";
+			    $audio .= "</audio>\n";
+			    echo htmlentities($audio);
+			} else if ($type == "application/x-shockwave-flash") {
+			    $flash = "" .
+	"<object classid=\"clsid:d27cdb6e-ae6d-11cf-96b8-444553540000\" width=\"550\" height=\"400\" id=\"movie_name\" align=\"middle\">\n" .
+	"    <param name=\"movie\" value=\"$url\"/>\n" .
+	"    <!--[if !IE]>-->\n" .
+	"    <object type=\"application/x-shockwave-flash\" data=\"$url\" width=\"550\" height=\"400\">\n" .
+	"        <param name=\"movie\" value=\"$url\"/>\n" .
+	"	<param name=\"play\" value=\"false\" />\n" .
+	"    <!--<![endif]-->\n" .
+	"        <a href=\"http://www.adobe.com/go/getflash\">\n" .
+	"            <img src=\"http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif\" alt=\"Get Adobe Flash player\"/>\n" .
+	"        </a>\n" .
+	"    <!--[if !IE]>-->\n" .
+	"    </object>\n" .
+	"    <!--<![endif]-->\n" .
+	"</object>\n";
+			    echo htmlentities($flash);
+			} else {
+			    echo "      $title\n";
+			}
 		} else {
 		    echo "      $title\n";
 		}

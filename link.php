@@ -5,15 +5,15 @@ class InvalidIDBaseException extends InvalidIDException {};
 class InvalidIDRangeException extends InvalidIDException {};
 class UnknownIDException extends Exception {};
 
-ini_set('display_errors', 1);
-ini_set('error_log', "/tmp/link.errors");
-ini_set('log_errors', 1);
-error_reporting(E_ALL);
-
 $conf = parse_ini_file('config.ini');
 
 if (!isset($conf))
         die();
+
+ini_set('display_errors', 1);
+ini_set('error_log', $conf['errors']);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
 
 $username = $conf['username'];
 $password = $conf['password'];
